@@ -11,7 +11,6 @@ Claude Code 角色制开发模式 — 5 喵团队协作系统。
 - **自动派单** — 20 分钟 cron 轮询，空闲时自动按优先级抓活
 - **角色锁** — 每个 Agent 只做自己职责范围内的事，不抢不代不转发
 - **跨项目隔离** — 基于 `$PWD` hash 的 namespace，多项目并行不冲突
-- **iCloud 同步** — skill 文件放在 iCloud Drive，macOS 设备间自动同步
 
 ## 前置依赖
 
@@ -74,30 +73,29 @@ tmux source-file ~/.tmux.conf 2>/dev/null || true
 
 ## 安装
 
-### 方式一：直接安装（推荐）
+### 方式一：全局安装（推荐）
+
+所有项目都能使用 `/cat-roles`，skill 文件统一管理。
 
 ```bash
-# 克隆仓库
-git clone https://github.com/86777835/cat-roles-skill.git
+# 克隆到 Claude Code 全局 skills 目录
+git clone https://github.com/86777835/cat-roles-skill.git ~/.claude/skills/cat-roles
 
-# 创建软链到 Claude Code skills 目录
-ln -s "$(pwd)/cat-roles-skill" ~/.claude/skills/cat-roles
-
-# 验证安装
-ls -la ~/.claude/skills/cat-roles/SKILL.md
+# 验证
+ls ~/.claude/skills/cat-roles/SKILL.md
 ```
 
-### 方式二：iCloud 同步（macOS 多设备）
+### 方式二：项目级安装
+
+只在当前项目生效，适合团队协作或需要定制 skill 的场景。
 
 ```bash
-# 克隆到 iCloud Drive
-mkdir -p "$HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-skills"
-git clone https://github.com/86777835/cat-roles-skill.git \
-  "$HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-skills/cat-roles"
+# 在项目根目录下
+mkdir -p .claude/skills
+git clone https://github.com/86777835/cat-roles-skill.git .claude/skills/cat-roles
 
-# 创建软链
-ln -s "$HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-skills/cat-roles" \
-  ~/.claude/skills/cat-roles
+# 验证
+ls .claude/skills/cat-roles/SKILL.md
 ```
 
 ## 使用
@@ -164,14 +162,11 @@ cat-roles-skill/
 ## 卸载
 
 ```bash
-# 删除软链
-rm ~/.claude/skills/cat-roles
+# 全局安装
+rm -rf ~/.claude/skills/cat-roles
 
-# 删除仓库（直接安装）
-rm -rf /path/to/cat-roles-skill
-
-# 删除仓库（iCloud 安装）
-rm -rf "$HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-skills/cat-roles"
+# 项目级安装（在项目根目录下）
+rm -rf .claude/skills/cat-roles
 ```
 
 ## License
