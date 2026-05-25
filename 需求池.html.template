@@ -766,13 +766,13 @@
 
   <header class="page-header">
     <div>
-      <h1>全能团队 · <span>需求池</span></h1>
+      <h1>{{PROJECT_NAME}} · <span>需求池</span></h1>
       <div class="page-meta" style="margin-top:0.35rem;">
-        产品开发协作看板 · 由<b>产品喵</b>维护
+        {{PROJECT_TAGLINE}} · 由<b>产品喵</b>维护
       </div>
     </div>
     <div class="page-meta">
-      最后更新：<b>2025-05-25 产品喵初始化</b>
+      最后更新：<b>{{LAST_UPDATED}}</b>
     </div>
   </header>
 
@@ -780,23 +780,23 @@
   <section class="stats">
     <div class="stat-card">
       <div class="stat-label">总需求数</div>
-      <div class="stat-value">10</div>
-      <div class="stat-sub">P0×6 · P1×2 · P2×2</div>
+      <div class="stat-value">0</div>
+      <div class="stat-sub">-</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">进行中</div>
-      <div class="stat-value warn">1</div>
-      <div class="stat-sub">错误处理与友好提示</div>
+      <div class="stat-value warn">0</div>
+      <div class="stat-sub">-</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">待开发</div>
-      <div class="stat-value accent">4</div>
-      <div class="stat-sub">P1×2 · P2×2</div>
+      <div class="stat-value accent">0</div>
+      <div class="stat-sub">-</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">已完成</div>
-      <div class="stat-value ok">5</div>
-      <div class="stat-sub">P0 核心链路 ✅</div>
+      <div class="stat-value ok">0</div>
+      <div class="stat-sub">-</div>
     </div>
   </section>
 
@@ -822,63 +822,9 @@
     <div class="column">
       <div class="column-header">
         <div class="column-title"><span class="column-dot pending"></span>待开发</div>
-        <div class="column-count">4</div>
+        <div class="column-count">0</div>
       </div>
       <div class="column-body">
-
-        <div class="req-card" data-priority="p1">
-          <div class="req-top">
-            <span class="priority p1">P1</span>
-            <span class="module-tag">前端</span>
-          </div>
-          <div class="req-title">手动框选字幕区域</div>
-          <div class="req-desc"><b>背景：</b>自动检测有时不准（字幕位置不固定、OCR 误检），需要让用户手动指定字幕区域。<br><b>描述：</b>在视频预览画面上叠加 Canvas，用户拖拽画出矩形框。框选结果转为 x1,y1,x2,y2 坐标传给后端。用户也可选择「自动检测」模式跳过手动框选。<br><b>预期效果：</b>用户在视频上拖拽画框，框选区域高亮显示，坐标自动填入配置。后端收到坐标后跳过 OCR 直接用指定区域 inpaint。</div>
-          <div class="req-bottom">
-            <span class="owner"><span class="owner-dot dev"></span>开发喵</span>
-            <span style="font-size:0.68rem;color:var(--muted);font-family:var(--font-mono)">F07 · 前端</span>
-          </div>
-        </div>
-
-        <div class="req-card" data-priority="p1">
-          <div class="req-top">
-            <span class="priority p1">P1</span>
-            <span class="module-tag">前端</span>
-          </div>
-          <div class="req-title">视频预览（上传后 + 处理完成后）</div>
-          <div class="req-desc"><b>背景：</b>用户需要在上传后确认视频内容正确，处理完成后需要对比查看效果。<br><b>描述：</b>上传后：用 URL.createObjectURL 在 &lt;video&gt; 标签播放原始视频。处理完成后：在结果区域嵌入处理后视频的预览，用 /api/download/{task_id} 作为 src。支持播放/暂停/拖动进度条。<br><b>预期效果：</b>上传后可立即播放原视频；处理完成后可播放处理后的视频，前后对比字幕是否去除。</div>
-          <div class="req-bottom">
-            <span class="owner"><span class="owner-dot dev"></span>开发喵</span>
-            <span style="font-size:0.68rem;color:var(--muted);font-family:var(--font-mono)">F08+F09 · 前端</span>
-          </div>
-        </div>
-
-        <div class="req-card" data-priority="p2">
-          <div class="req-top">
-            <span class="priority p2">P2</span>
-            <span class="module-tag">前端</span>
-            <span class="module-tag backend">后端</span>
-          </div>
-          <div class="req-title">批量处理</div>
-          <div class="req-desc"><b>背景：</b>影视二创博主经常需要一次性处理多个视频，逐个上传效率太低。<br><b>描述：</b>前端支持多文件选择/拖拽，展示文件列表和每个文件的处理状态。后端实现任务队列，依次处理（CPU 模式不支持并行），每个任务独立返回进度。支持逐个下载或全部完成后打包下载（ZIP）。<br><b>预期效果：</b>用户一次选择多个视频，系统排队处理，每个视频独立显示进度，可单独或批量下载。</div>
-          <div class="req-bottom">
-            <span class="owner"><span class="owner-dot dev"></span>开发喵</span>
-            <span style="font-size:0.68rem;color:var(--muted);font-family:var(--font-mono)">F10 · 前后端</span>
-          </div>
-        </div>
-
-        <div class="req-card" data-priority="p2">
-          <div class="req-top">
-            <span class="priority p2">P2</span>
-            <span class="module-tag">前端</span>
-            <span class="module-tag backend">后端</span>
-          </div>
-          <div class="req-title">处理历史记录</div>
-          <div class="req-desc"><b>背景：</b>用户处理完视频后可能关闭页面，回来想重新下载或查看之前处理的结果。<br><b>描述：</b>后端用 SQLite 或 JSON 文件持久化任务记录（task_id、文件名、状态、时间、输出路径）。前端新增「历史记录」页面，展示最近 N 条记录（缩略图、状态、时间），可重新下载。设置文件过期清理策略（如 24h 后自动删除）。<br><b>预期效果：</b>用户重新打开页面可看到之前的处理记录，可下载未过期的结果文件。</div>
-          <div class="req-bottom">
-            <span class="owner"><span class="owner-dot dev"></span>开发喵</span>
-            <span style="font-size:0.68rem;color:var(--muted);font-family:var(--font-mono)">F11 · 前后端</span>
-          </div>
-        </div>
 
       </div>
     </div>
@@ -887,22 +833,9 @@
     <div class="column">
       <div class="column-header">
         <div class="column-title"><span class="column-dot progress"></span>进行中</div>
-        <div class="column-count">1</div>
+        <div class="column-count">0</div>
       </div>
       <div class="column-body">
-
-        <div class="req-card" data-priority="p0">
-          <div class="req-top">
-            <span class="priority p0">P0</span>
-            <span class="module-tag">前端</span>
-          </div>
-          <div class="req-title">错误处理与友好提示</div>
-          <div class="req-desc"><b>背景：</b>上传失败、格式不支持、处理异常等情况需要给用户清晰的反馈，而非白屏或技术报错。<br><b>描述：</b>前端覆盖以下场景：文件格式不支持（非视频文件）、文件超过 500MB、网络中断、处理失败（后端返回 error 状态）。每个场景有对应的中文提示文案。提供重试按钮。<br><b>预期效果：</b>任何错误场景都有明确的中文提示，用户知道发生了什么以及下一步怎么做。</div>
-          <div class="req-bottom">
-            <span class="owner"><span class="owner-dot dev"></span>开发喵</span>
-            <span style="font-size:0.68rem;color:var(--muted);font-family:var(--font-mono)">F06 · 前端</span>
-          </div>
-        </div>
 
       </div>
     </div>
@@ -911,81 +844,9 @@
     <div class="column">
       <div class="column-header">
         <div class="column-title"><span class="column-dot done"></span>已完成</div>
-        <div class="column-count">5</div>
+        <div class="column-count">0</div>
       </div>
       <div class="column-body">
-
-        <div class="req-card done" data-priority="p0">
-          <div class="req-top">
-            <span class="priority p0">P0</span>
-            <span class="module-tag">前端</span>
-            <span class="module-tag">后端</span>
-            <span class="verify-link" onclick="event.stopPropagation(); window.open('http://localhost:8080', '_blank')">🔍 验收</span>
-          </div>
-          <div class="req-title">视频上传功能</div>
-          <div class="req-desc"><b>背景：</b>用户需要上传含硬字幕的视频文件到系统。<br><b>描述：</b>支持拖拽/点击上传，MP4/MKV/AVI/MOV 格式，500MB 上限。上传前前端校验格式和大小，后端二次校验。文件保存到 backend/uploads/。<br><b>预期效果：</b>用户拖拽或点击上传视频，上传成功后显示文件名、大小和视频预览。不支持的格式立即提示。</div>
-          <div class="req-bottom">
-            <span class="owner"><span class="owner-dot dev"></span>开发喵</span>
-            <span style="font-size:0.68rem;color:var(--muted);font-family:var(--font-mono)">F01 · 前后端</span>
-          </div>
-        </div>
-
-        <div class="req-card done" data-priority="p0">
-          <div class="req-top">
-            <span class="priority p0">P0</span>
-            <span class="module-tag backend">后端</span>
-            <span class="verify-link" onclick="event.stopPropagation(); window.open('http://localhost:8080', '_blank')">🔍 验收</span>
-          </div>
-          <div class="req-title">字幕区域自动检测</div>
-          <div class="req-desc"><b>背景：</b>系统需要自动定位视频中的字幕位置，才能进行去除。<br><b>描述：</b>PaddleOCR CPU 模式检测文字区域，每 10 帧采样一次，合并重叠区域 + padding 10px。用户指定区域时跳过 OCR 直接用指定坐标。<br><b>预期效果：</b>自动检测到字幕区域坐标列表，用户也可手动覆盖。CPU 模式可运行。</div>
-          <div class="req-bottom">
-            <span class="owner"><span class="owner-dot dev"></span>开发喵</span>
-            <span style="font-size:0.68rem;color:var(--muted);font-family:var(--font-mono)">F02 · 后端</span>
-          </div>
-        </div>
-
-        <div class="req-card done" data-priority="p0">
-          <div class="req-top">
-            <span class="priority p0">P0</span>
-            <span class="module-tag backend">后端</span>
-            <span class="verify-link" onclick="event.stopPropagation(); window.open('http://localhost:8080', '_blank')">🔍 验收</span>
-          </div>
-          <div class="req-title">OpenCV inpaint 字幕去除</div>
-          <div class="req-desc"><b>背景：</b>检测到字幕区域后，需要逐帧修复画面。<br><b>描述：</b>基于 mask 生成，OpenCV Telea 算法逐帧 inpaint，每 30 帧回调进度。PyAV 合并原音频，fallback shutil.copy2。<br><b>预期效果：</b>输出的视频中字幕区域被修复，音频完整保留。CPU 可运行。</div>
-          <div class="req-bottom">
-            <span class="owner"><span class="owner-dot dev"></span>开发喵</span>
-            <span style="font-size:0.68rem;color:var(--muted);font-family:var(--font-mono)">F03 · 后端</span>
-          </div>
-        </div>
-
-        <div class="req-card done" data-priority="p0">
-          <div class="req-top">
-            <span class="priority p0">P0</span>
-            <span class="module-tag">前端</span>
-            <span class="module-tag backend">后端</span>
-            <span class="verify-link" onclick="event.stopPropagation(); window.open('http://localhost:8080', '_blank')">🔍 验收</span>
-          </div>
-          <div class="req-title">处理进度实时展示（WebSocket）</div>
-          <div class="req-desc"><b>背景：</b>视频处理耗时长（CPU 模式），用户需要实时看到进度。<br><b>描述：</b>WebSocket 实时推送进度百分比+状态文本。asyncio.run_coroutine_threadsafe 线程安全推送。前端断连自动降级 2s 轮询。<br><b>预期效果：</b>进度条从 0% 实时更新到 100%，显示当前阶段（检测/去除）和帧进度。</div>
-          <div class="req-bottom">
-            <span class="owner"><span class="owner-dot dev"></span>开发喵</span>
-            <span style="font-size:0.68rem;color:var(--muted);font-family:var(--font-mono)">F04 · 前后端</span>
-          </div>
-        </div>
-
-        <div class="req-card done" data-priority="p0">
-          <div class="req-top">
-            <span class="priority p0">P0</span>
-            <span class="module-tag backend">后端</span>
-            <span class="verify-link" onclick="event.stopPropagation(); window.open('http://localhost:8080', '_blank')">🔍 验收</span>
-          </div>
-          <div class="req-title">处理结果下载</div>
-          <div class="req-desc"><b>背景：</b>处理完成后用户需要下载去除字幕的视频。<br><b>描述：</b>GET /api/download/{task_id} 返回 MP4 文件，Content-Type: video/mp4，文件名含 task_id。只允许 status=done 时下载。<br><b>预期效果：</b>点击下载按钮直接下载 MP4 文件，文件名清晰可辨。</div>
-          <div class="req-bottom">
-            <span class="owner"><span class="owner-dot dev"></span>开发喵</span>
-            <span style="font-size:0.68rem;color:var(--muted);font-family:var(--font-mono)">F05 · 后端</span>
-          </div>
-        </div>
 
       </div>
     </div>
@@ -1006,15 +867,15 @@
     <h2>产品决策记录（只读）</h2>
     <div class="decisions-sub">用户已确认的 9 项基线决策，所有需求需在此约束内设计</div>
     <div class="decisions-grid">
-      <div class="decision"><span class="decision-num">01</span><span class="decision-text"><strong>技术路线</strong>：PaddleOCR 文字检测 + OpenCV inpaint 修复，CPU 模式运行</span></div>
-      <div class="decision"><span class="decision-num">02</span><span class="decision-text"><strong>部署环境</strong>：无 GPU 服务器，所有算法走 CPU，处理速度可接受（分钟级）</span></div>
-      <div class="decision"><span class="decision-num">03</span><span class="decision-text"><strong>MVP 范围</strong>：单视频上传→自动检测→去除→下载，不批量不历史</span></div>
-      <div class="decision"><span class="decision-num">04</span><span class="decision-text"><strong>不做鉴权</strong>：MVP 无用户注册/登录，无需鉴权</span></div>
-      <div class="decision"><span class="decision-num">05</span><span class="decision-text"><strong>文件限制</strong>：最大 500MB，支持 MP4/MKV/AVI/MOV</span></div>
-      <div class="decision"><span class="decision-num">06</span><span class="decision-text"><strong>不做编辑</strong>：只做去字幕，不做视频剪辑/裁剪/合并</span></div>
-      <div class="decision"><span class="decision-num">07</span><span class="decision-text"><strong>GPU 算法预留</strong>：P3 阶段考虑 STTN/LAMA 等 GPU 算法，MVP 预留接口</span></div>
-      <div class="decision"><span class="decision-num">08</span><span class="decision-text"><strong>仅桌面端</strong>：MVP 不做移动端适配，仅桌面浏览器</span></div>
-      <div class="decision"><span class="decision-num">09</span><span class="decision-text"><strong>无持久化</strong>：重启后任务清空，P2 阶段再做历史记录</span></div>
+      <div class="decision"><span class="decision-num">01</span><span class="decision-text"><strong>项目决策点 1</strong>：待填写</span></div>
+      <div class="decision"><span class="decision-num">02</span><span class="decision-text"><strong>项目决策点 2</strong>：待填写</span></div>
+      <div class="decision"><span class="decision-num">03</span><span class="decision-text"><strong>项目决策点 3</strong>：待填写</span></div>
+      <div class="decision"><span class="decision-num">04</span><span class="decision-text"><strong>项目决策点 4</strong>：待填写</span></div>
+      <div class="decision"><span class="decision-num">05</span><span class="decision-text"><strong>项目决策点 5</strong>：待填写</span></div>
+      <div class="decision"><span class="decision-num">06</span><span class="decision-text"><strong>项目决策点 6</strong>：待填写</span></div>
+      <div class="decision"><span class="decision-num">07</span><span class="decision-text"><strong>项目决策点 7</strong>：待填写</span></div>
+      <div class="decision"><span class="decision-num">08</span><span class="decision-text"><strong>项目决策点 8</strong>：待填写</span></div>
+      <div class="decision"><span class="decision-num">09</span><span class="decision-text"><strong>项目决策点 9</strong>：待填写</span></div>
     </div>
   </section>
 

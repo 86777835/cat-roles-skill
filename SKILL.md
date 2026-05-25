@@ -416,10 +416,21 @@ tmux send-keys -t %<pane_id> Enter                 # 提交消息
    ```bash
    cp "$HOME/.claude/skills/cat-roles/需求池.html.template" "$PWD/需求池.html"
    ```
-3. 用 sed / Edit 把模板里 `{{PROJECT_NAME}}` / `{{PROJECT_TAGLINE}}` / `{{LAST_UPDATED}}` 全部替换：
-   - `{{LAST_UPDATED}}` = `$(date '+%Y-%m-%d %H:%M')`
-4. 决策记录 9 个 slot 保留结构、内容空白（模板已是「项目决策点 N」占位）。提示用户「后续按你项目实际拍板的决策替换 09 个 slot」
-5. 把新建的 HTML 路径报告给用户，告诉他在浏览器打开 `file://` 路径就能用
+
+   ⚠️ **项目隔离铁律：模板是跨项目共享的，拷贝后必须立即清空其他项目的残留数据！** 拷贝完成后必须执行以下清理步骤（顺序不可跳过）：
+
+   **a) 清空三列卡片**：删除「待开发」「进行中」「已完成」三个 `column-body` 内的所有 `<div class="req-card" ...>...</div>` 节点，只留空的 `<div class="column-body">\n      </div>`。三列的 `column-count` 全部归零。
+
+   **b) 清空决策记录**：把 9 个 `<div class="decision">` 的 `decision-text` 内容恢复为「项目决策点 N」占位符。
+
+   **c) 清空 stats**：顶部 stats 区域的总数、各列计数、各优先级计数全部归零。
+
+   **d) 替换占位符**：用 sed / Edit 把 `{{PROJECT_NAME}}` / `{{PROJECT_TAGLINE}}` / `{{LAST_UPDATED}}` 替换为实际值。
+
+   **为什么不能省略**：模板文件（`需求池.html.template`）是所有项目共用的全局资源。当你在项目 A 使用时，模板里可能残留项目 B 的卡片、决策记录和 stats。如果不清理，项目 A 的看板会显示项目 B 的数据，导致需求混乱。每个项目的看板必须是独立的、从零开始的状态。
+
+3. 决策记录 9 个 slot 保留结构、内容空白。提示用户「后续按你项目实际拍板的决策替换 01-09 个 slot」
+4. 把新建的 HTML 路径报告给用户，告诉他在浏览器打开 `file://` 路径就能用
 
 #### 恢复流程（情况 B）
 
