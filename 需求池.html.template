@@ -1,0 +1,1594 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{PROJECT_NAME}} · 需求池</title>
+<style>
+  :root {
+    --bg:        oklch(13% 0.01 260);
+    --surface:   oklch(17% 0.012 260);
+    --surface2:  oklch(21% 0.014 260);
+    --surface3:  oklch(25% 0.016 260);
+    --fg:        oklch(92% 0.005 260);
+    --muted:     oklch(62% 0.015 260);
+    --border:    oklch(25% 0.015 260);
+    --accent:    oklch(62% 0.18 270);
+    --accent-dim: oklch(62% 0.18 270 / 0.12);
+    --accent2:   oklch(58% 0.16 155);
+    --warn:      oklch(68% 0.16 75);
+    --danger:    oklch(62% 0.20 25);
+    --radius:    8px;
+    --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+    --font-body:    -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+    --font-mono:    'SF Mono', 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  }
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+  body {
+    font-family: var(--font-body);
+    background: var(--bg); color: var(--fg);
+    line-height: 1.6;
+  }
+
+  .page { max-width: 1440px; margin: 0 auto; padding: 2rem 2.5rem 4rem; }
+
+  /* Header */
+  .page-header {
+    display: flex; justify-content: space-between;
+    align-items: flex-end; flex-wrap: wrap; gap: 1rem;
+    padding-bottom: 1.25rem; border-bottom: 1px solid var(--border);
+    margin-bottom: 1.75rem;
+  }
+  .page-header h1 {
+    font-family: var(--font-display);
+    font-size: 1.65rem; font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .page-header h1 span { color: var(--accent); }
+  .page-meta {
+    font-size: 0.8rem; color: var(--muted);
+    font-family: var(--font-mono);
+  }
+  .page-meta b { color: var(--fg); font-weight: 600; }
+
+  /* Stat cards */
+  .stats {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1rem; margin-bottom: 1.75rem;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.25rem;
+  }
+  .stat-label {
+    font-size: 0.7rem; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--muted);
+    font-family: var(--font-mono);
+    margin-bottom: 0.5rem;
+  }
+  .stat-value {
+    font-family: var(--font-display);
+    font-size: 1.85rem; font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .stat-value.accent { color: var(--accent); }
+  .stat-value.warn   { color: var(--warn); }
+  .stat-value.ok     { color: var(--accent2); }
+  .stat-sub {
+    font-size: 0.72rem; color: var(--muted);
+    margin-top: 0.25rem;
+    font-family: var(--font-mono);
+  }
+
+  /* Toolbar */
+  .toolbar {
+    display: flex; gap: 0.75rem; align-items: center;
+    flex-wrap: wrap; margin-bottom: 1.25rem;
+  }
+  .filter-group {
+    display: flex; gap: 0.25rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; padding: 0.2rem;
+  }
+  .filter-btn {
+    padding: 0.35rem 0.75rem; border-radius: 4px;
+    font-size: 0.78rem; cursor: pointer;
+    background: none; border: none; color: var(--muted);
+    font-family: var(--font-body); transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .filter-btn:hover { color: var(--fg); }
+  .filter-btn.active { background: var(--accent-dim); color: var(--accent); }
+  .filter-count {
+    font-family: var(--font-mono);
+    font-size: 0.65rem; margin-left: 0.25rem; opacity: 0.7;
+  }
+  .toolbar-hint {
+    margin-left: auto;
+    font-size: 0.72rem; color: var(--muted);
+    font-family: var(--font-mono);
+  }
+
+  /* Kanban */
+  .kanban {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1rem; align-items: flex-start;
+  }
+  .column {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    display: flex; flex-direction: column;
+    min-height: 280px;
+  }
+  .column-header {
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between;
+    align-items: center;
+    background: var(--surface2);
+    border-top-left-radius: var(--radius);
+    border-top-right-radius: var(--radius);
+  }
+  .column-title {
+    font-size: 0.82rem; font-weight: 600;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .column-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .column-dot.pending  { background: var(--muted); }
+  .column-dot.progress { background: var(--warn); }
+  .column-dot.done     { background: var(--accent2); }
+  .column-count {
+    font-family: var(--font-mono);
+    font-size: 0.72rem; color: var(--muted);
+    background: var(--surface3);
+    padding: 0.1rem 0.45rem; border-radius: 10px;
+  }
+  .column-body {
+    padding: 0.75rem;
+    display: flex; flex-direction: column; gap: 0.6rem;
+  }
+
+  /* Card */
+  .req-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.75rem 0.85rem;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .req-card:hover {
+    border-color: var(--surface3);
+    transform: translateY(-1px);
+  }
+  .req-card.hidden { display: none; }
+  .req-top {
+    display: flex; align-items: center; gap: 0.5rem;
+    margin-bottom: 0.4rem; flex-wrap: wrap;
+  }
+  .priority {
+    display: inline-block; padding: 0.12rem 0.45rem;
+    border-radius: 3px; font-size: 0.65rem;
+    font-family: var(--font-mono); font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .priority.p0 { background: oklch(62% 0.20 25 / 0.18); color: var(--danger); }
+  .priority.p1 { background: oklch(68% 0.16 75 / 0.18); color: var(--warn); }
+  .priority.p2 { background: oklch(62% 0.015 260 / 0.22); color: var(--muted); }
+  .priority.p3 { background: var(--surface3); color: var(--muted); opacity: 0.7; }
+  .module-tag {
+    display: inline-block; padding: 0.1rem 0.4rem;
+    border-radius: 3px; font-size: 0.62rem;
+    font-family: var(--font-mono);
+    background: var(--accent-dim); color: var(--accent);
+    letter-spacing: 0.03em;
+  }
+  .module-tag.backend { background: oklch(58% 0.16 155 / 0.15); color: var(--accent2); }
+  .module-tag.devops  { background: oklch(65% 0.14 200 / 0.15); color: oklch(65% 0.14 200); }
+  .module-tag.product { background: oklch(68% 0.16 75 / 0.15); color: var(--warn); }
+  .blocked-tag {
+    display: inline-block; padding: 0.1rem 0.4rem;
+    border-radius: 3px; font-size: 0.62rem;
+    font-family: var(--font-mono);
+    background: oklch(62% 0.20 25 / 0.15); color: var(--danger);
+    letter-spacing: 0.03em;
+  }
+  .req-title {
+    font-size: 0.88rem; font-weight: 600;
+    color: var(--fg); margin-bottom: 0.3rem;
+    line-height: 1.4;
+  }
+  .req-desc {
+    font-size: 0.76rem; color: var(--muted);
+    line-height: 1.55; margin-bottom: 0.5rem;
+  }
+  .req-bottom {
+    display: flex; justify-content: space-between;
+    align-items: center; gap: 0.5rem;
+    padding-top: 0.4rem;
+    border-top: 1px dashed var(--border);
+  }
+  .owner {
+    font-size: 0.7rem; color: var(--muted);
+    font-family: var(--font-mono);
+    display: flex; align-items: center; gap: 0.3rem;
+  }
+  .owner-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+  }
+  .owner-dot.dev       { background: oklch(62% 0.18 270); }
+  .owner-dot.dev2      { background: oklch(68% 0.18 310); }
+  .owner-dot.test      { background: var(--warn); }
+  .owner-dot.product   { background: var(--accent2); }
+  .owner-dot.ops       { background: oklch(65% 0.14 200); }
+  .owner-dot.unassigned { background: var(--surface3); }
+
+  /* Done variant — compact */
+  .req-card.done .req-desc   { display: none; }
+  .req-card.done .req-bottom { display: none; }
+  /* 真归档：HTML 中加 .archived class 后 done 卡从「已完成」隐藏 */
+  .req-card.done.archived { display: none; }
+  .req-card.done {
+    padding: 0.55rem 0.75rem;
+    opacity: 0.85;
+  }
+  .req-card.done .req-title {
+    font-size: 0.8rem; margin-bottom: 0;
+    font-weight: 500;
+  }
+  .req-card.done .req-top { margin-bottom: 0.3rem; }
+  .check-icon { color: var(--accent2); font-size: 0.7rem; font-family: var(--font-mono); }
+
+  /* Decisions */
+  .decisions {
+    margin-top: 2.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+  }
+  .decisions h2 {
+    font-family: var(--font-display);
+    font-size: 1rem; font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+  .decisions-sub {
+    font-size: 0.72rem; color: var(--muted);
+    font-family: var(--font-mono);
+    margin-bottom: 1rem;
+  }
+  .decisions-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 0.65rem 1.5rem;
+  }
+  .decision {
+    display: flex; align-items: flex-start; gap: 0.6rem;
+    font-size: 0.82rem;
+    padding: 0.45rem 0;
+    border-bottom: 1px dashed var(--border);
+  }
+  .decision:last-child, .decision:nth-last-child(2) { border-bottom: none; }
+  .decision-num {
+    font-family: var(--font-mono);
+    font-size: 0.7rem; color: var(--accent);
+    background: var(--accent-dim);
+    padding: 0.15rem 0.45rem; border-radius: 3px;
+    flex-shrink: 0; font-weight: 600;
+  }
+  .decision-text { color: var(--fg); }
+  .decision-text strong { color: var(--accent); font-weight: 600; }
+
+  /* Legend */
+  .legend {
+    margin-top: 1.5rem; padding: 1rem 1.25rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 0.75rem; color: var(--muted);
+    display: flex; gap: 1.5rem; flex-wrap: wrap;
+    font-family: var(--font-mono);
+  }
+  .legend b { color: var(--fg); font-weight: 600; }
+
+  /* ─────── #193 git archive modal ─────── */
+  .archive-modal {
+    border: none;
+    border-radius: 16px;
+    padding: 0;
+    max-width: 720px;
+    width: 90vw;
+    max-height: 80vh;
+    overflow: hidden;
+    background: var(--surface, #1a1a2e);
+    color: var(--fg, #eee);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+  }
+  .archive-modal::backdrop { background: rgba(0,0,0,0.6); }
+  .archive-modal .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .archive-modal .close-btn {
+    background: none; border: none;
+    font-size: 24px; cursor: pointer;
+    color: inherit; line-height: 1;
+  }
+  .archive-modal .modal-body {
+    padding: 12px 20px;
+    overflow-y: auto;
+    max-height: calc(80vh - 60px);
+  }
+  .archive-row {
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-size: 13px; line-height: 1.6;
+  }
+  .archive-row:last-child { border-bottom: none; }
+  .archive-time  { color: var(--muted, #888); margin-right: 8px; }
+  .archive-tag   { color: var(--accent, #6f8dff); margin-right: 8px; font-size: 11px; }
+  .archive-repo  { color: var(--fg, #eee); margin-right: 8px; font-weight: 600; }
+  .archive-sha   { background: rgba(255,255,255,0.07); padding: 1px 6px; border-radius: 4px; font-family: monospace; }
+
+  @media (max-width: 1100px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .kanban { grid-template-columns: 1fr; }
+    .decisions-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ─────── 验收系统（仅 leisure cat 操作） ─────── */
+  .verify-btn {
+    margin-left: auto;
+    padding: 0.18rem 0.55rem;
+    border: 1px solid var(--border);
+    background: var(--surface3);
+    color: var(--muted);
+    font-size: 0.62rem;
+    font-family: var(--font-mono);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.03em;
+  }
+  .verify-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-dim);
+  }
+  .req-card.done .req-top { align-items: center; }
+  .verified-tag {
+    display: inline-block;
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.62rem;
+    font-family: var(--font-mono);
+    background: oklch(58% 0.16 155 / 0.2);
+    color: var(--accent2);
+    letter-spacing: 0.03em;
+    margin-left: auto;
+    font-weight: 600;
+  }
+
+  .verify-modal {
+    display: none;
+    position: fixed; inset: 0;
+    background: oklch(0% 0 0 / 0.7);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .verify-modal.active { display: flex; }
+  .verify-modal-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem 1.5rem 1.25rem;
+    width: min(500px, 90vw);
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+  .verify-modal-box h3 {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    margin-bottom: 0.25rem;
+    letter-spacing: -0.01em;
+  }
+  .verify-modal-sub {
+    font-size: 0.7rem;
+    color: var(--danger);
+    font-family: var(--font-mono);
+    margin-bottom: 1.25rem;
+    letter-spacing: 0.03em;
+  }
+  .verify-target-title {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.82rem;
+    margin-bottom: 1.1rem;
+    word-break: break-word;
+  }
+  .verify-radio-group {
+    display: flex; flex-direction: column; gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .verify-radio-group label {
+    display: flex; gap: 0.5rem; align-items: center;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.15s;
+    background: var(--surface2);
+  }
+  .verify-radio-group label:hover { border-color: var(--surface3); }
+  .verify-radio-group label:has(input:checked) {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+  }
+  .verify-reject-fields {
+    display: none;
+    flex-direction: column; gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding: 0.9rem;
+    background: var(--surface2);
+    border: 1px dashed var(--border);
+    border-radius: 4px;
+  }
+  .verify-reject-fields.active { display: flex; }
+  .verify-form-row label {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-bottom: 0.3rem;
+    font-family: var(--font-mono);
+    letter-spacing: 0.04em;
+  }
+  .verify-form-row textarea, .verify-form-row select {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--fg);
+    padding: 0.5rem 0.7rem;
+    border-radius: 4px;
+    font-size: 0.82rem;
+    font-family: var(--font-body);
+    resize: vertical;
+    box-sizing: border-box;
+  }
+  .verify-form-row textarea:focus, .verify-form-row select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .verify-form-row textarea { min-height: 75px; }
+  .verify-actions {
+    display: flex; justify-content: flex-end; gap: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border);
+  }
+  .verify-actions button {
+    padding: 0.45rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--surface2);
+    color: var(--fg);
+    font-size: 0.8rem;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 0.15s;
+  }
+  .verify-actions button.primary {
+    background: var(--accent);
+    color: oklch(15% 0.005 260);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  .verify-actions button:hover { transform: translateY(-1px); }
+
+  /* ─────── 归档需求 view（仅 leisure cat 操作） ─────── */
+  .archive-toggle {
+    padding: 0.35rem 0.85rem;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--fg);
+    font-size: 0.78rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .archive-toggle:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .archive-count-badge {
+    background: var(--accent-dim);
+    color: var(--accent);
+    padding: 0.05rem 0.45rem;
+    border-radius: 8px;
+    font-size: 0.65rem;
+    font-family: var(--font-mono);
+    font-weight: 600;
+  }
+  body.view-archive .archive-toggle {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .archive-view {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem 1.75rem;
+    margin-top: 0.5rem;
+  }
+  body.view-archive .archive-view { display: block; }
+  body.view-archive .kanban { display: none; }
+  body.view-archive .decisions { display: none; }
+  body.view-archive .toolbar .filter-group { display: none; }
+  body.view-archive .toolbar .toolbar-hint { display: none; }
+  .archive-header { margin-bottom: 1.25rem; }
+  .archive-header h2 {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.25rem;
+  }
+  .archive-header-sub {
+    font-size: 0.72rem;
+    color: var(--muted);
+    font-family: var(--font-mono);
+  }
+  .archive-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 0.85rem;
+  }
+  .archive-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.85rem 1rem;
+    transition: border-color 0.15s;
+  }
+  .archive-item:hover { border-color: var(--surface3); }
+  .archive-item-head {
+    display: flex; align-items: center;
+    gap: 0.5rem; flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+  }
+  .archive-time {
+    font-size: 0.65rem;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    margin-left: auto;
+  }
+  .archive-item-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.8rem;
+    line-height: 1.4;
+  }
+  .archive-rework-btn {
+    padding: 0.35rem 0.9rem;
+    background: oklch(68% 0.16 75 / 0.12);
+    color: var(--warn);
+    border: 1px solid oklch(68% 0.16 75 / 0.35);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.76rem;
+    font-family: var(--font-mono);
+    transition: all 0.15s;
+  }
+  .archive-rework-btn:hover {
+    background: oklch(68% 0.16 75 / 0.22);
+    border-color: var(--warn);
+  }
+  .archive-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-family: var(--font-mono);
+  }
+
+  /* ─────── 自动刷新 toggle ─────── */
+  .auto-refresh-toggle {
+    padding: 0.35rem 0.85rem;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--muted);
+    font-size: 0.78rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .auto-refresh-toggle:hover { transform: translateY(-1px); }
+  .auto-refresh-toggle.on {
+    background: oklch(58% 0.16 155 / 0.12);
+    color: var(--accent2);
+    border-color: oklch(58% 0.16 155 / 0.35);
+  }
+  .auto-refresh-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--muted);
+  }
+  .auto-refresh-toggle.on .auto-refresh-dot {
+    background: var(--accent2);
+    animation: pulse-dot 2s infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+
+  /* ─────── 卡片详情 modal ─────── */
+  .req-card { cursor: pointer; }
+  .detail-head {
+    display: flex; align-items: center; gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .detail-status-badge {
+    padding: 0.15rem 0.55rem;
+    border-radius: 3px;
+    font-size: 0.65rem;
+    font-family: var(--font-mono);
+    background: var(--surface3);
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    font-weight: 600;
+  }
+  .detail-status-badge.progress { background: oklch(68% 0.16 75 / 0.18); color: var(--warn); }
+  .detail-status-badge.done { background: oklch(58% 0.16 155 / 0.18); color: var(--accent2); }
+  .detail-close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 1.15rem;
+    cursor: pointer;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    line-height: 1;
+  }
+  .detail-close:hover { background: var(--surface3); color: var(--fg); }
+  .detail-modal-title {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.4;
+    margin: 0.25rem 0 1rem;
+    word-break: break-word;
+  }
+  .detail-tags {
+    display: flex; gap: 0.4rem; flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+  }
+  .detail-tags:empty { display: none; }
+  .detail-section { margin-bottom: 1rem; }
+  .detail-label {
+    font-size: 0.68rem;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    letter-spacing: 0.06em;
+    margin-bottom: 0.4rem;
+    text-transform: uppercase;
+  }
+  .detail-desc {
+    font-size: 0.85rem;
+    color: var(--fg);
+    line-height: 1.75;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.9rem 1.1rem;
+    word-break: break-word;
+    max-height: 50vh;
+    overflow-y: auto;
+  }
+  .detail-desc b { color: var(--accent); font-weight: 600; }
+  .detail-footer {
+    display: flex; justify-content: space-between;
+    align-items: center; gap: 1rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .detail-label-inline {
+    font-size: 0.68rem;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    margin-right: 0.4rem;
+    letter-spacing: 0.04em;
+  }
+  .detail-meta {
+    font-size: 0.68rem;
+    color: var(--muted);
+    font-family: var(--font-mono);
+  }
+
+  /* ─────── 去验收链接（已完成卡 / 详情 modal） ─────── */
+  .verify-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.18rem 0.55rem;
+    background: oklch(58% 0.16 155 / 0.12);
+    color: var(--accent2);
+    border: 1px solid oklch(58% 0.16 155 / 0.35);
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.65rem;
+    font-family: var(--font-mono);
+    letter-spacing: 0.03em;
+    margin-left: auto;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .verify-link:hover {
+    background: oklch(58% 0.16 155 / 0.22);
+    border-color: var(--accent2);
+    transform: translateY(-1px);
+  }
+  .detail-section .verify-link {
+    margin-left: 0;
+    font-size: 0.78rem;
+    padding: 0.4rem 0.85rem;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="page-header">
+    <div>
+      <h1>{{PROJECT_NAME}} · <span>需求池</span></h1>
+      <div class="page-meta" style="margin-top:0.35rem;">
+        {{PROJECT_TAGLINE}} · 由<b>产品喵</b>维护
+      </div>
+    </div>
+    <div class="page-meta">
+      最后更新：<b>{{LAST_UPDATED}}</b>
+    </div>
+  </header>
+
+  <!-- Stats -->
+  <section class="stats">
+    <div class="stat-card">
+      <div class="stat-label">总需求数</div>
+      <div class="stat-value">0</div>
+      <div class="stat-sub">无需求</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">进行中</div>
+      <div class="stat-value warn">0</div>
+      <div class="stat-sub">暂无进行中</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">待开发</div>
+      <div class="stat-value accent">0</div>
+      <div class="stat-sub">暂无待开发</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">已完成</div>
+      <div class="stat-value ok">0</div>
+      <div class="stat-sub">暂无完成项</div>
+    </div>
+  </section>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="filter-group" id="priorityFilter">
+      <button class="filter-btn active" data-priority="all">全部<span class="filter-count">0</span></button>
+      <button class="filter-btn" data-priority="p0">P0<span class="filter-count">0</span></button>
+      <button class="filter-btn" data-priority="p1">P1<span class="filter-count">0</span></button>
+      <button class="filter-btn" data-priority="p2">P2<span class="filter-count">0</span></button>
+      <button class="filter-btn" data-priority="p3">P3<span class="filter-count">0</span></button>
+    </div>
+    <button class="archive-toggle" id="archiveToggle"><span class="archive-toggle-label">📦 归档</span><span class="archive-count-badge" id="archiveCount">0</span></button>
+    <button class="filter-btn" onclick="document.getElementById('archiveModal').showModal()" title="git 存档记录">📦 git 存档<span class="filter-count" id="gitArchiveCount">0</span></button>
+    <button class="auto-refresh-toggle on" id="autoRefreshToggle"><span class="auto-refresh-dot"></span><span class="auto-refresh-label">自动刷新 15s</span></button>
+    <div class="toolbar-hint">筛选只作用于「待开发」+「进行中」</div>
+  </div>
+
+  <!-- Kanban -->
+  <section class="kanban">
+
+    <!-- 待开发 -->
+    <div class="column">
+      <div class="column-header">
+        <div class="column-title"><span class="column-dot pending"></span>待开发</div>
+        <div class="column-count">0</div>
+      </div>
+      <div class="column-body">
+      </div>
+    </div>
+
+    <!-- 进行中 -->
+    <div class="column">
+      <div class="column-header">
+        <div class="column-title"><span class="column-dot progress"></span>进行中</div>
+        <div class="column-count">0</div>
+      </div>
+      <div class="column-body">
+      </div>
+    </div>
+
+    <!-- 已完成 -->
+    <div class="column">
+      <div class="column-header">
+        <div class="column-title"><span class="column-dot done"></span>已完成</div>
+        <div class="column-count">0</div>
+      </div>
+      <div class="column-body">
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ─────── 归档需求 view（仅 leisure cat 操作） ─────── -->
+  <section class="archive-view" id="archiveView">
+    <div class="archive-header">
+      <h2>📦 归档需求</h2>
+      <div class="archive-header-sub">已验收通过的需求 · 不在需求池表上展示 · 可返工重新进入待开发</div>
+    </div>
+    <div class="archive-list" id="archiveList"></div>
+  </section>
+
+  <!-- Decisions -->
+  <section class="decisions">
+    <h2>产品决策记录（只读）</h2>
+    <div class="decisions-sub">用户已确认的 9 项基线决策，所有需求需在此约束内设计</div>
+    <div class="decisions-grid">
+      <div class="decision"><span class="decision-num">01</span><span class="decision-text"><strong>项目决策点 1</strong>：请按你项目实际替换（例如：MVP 范围 / 不做什么）</span></div>
+      <div class="decision"><span class="decision-num">02</span><span class="decision-text"><strong>项目决策点 2</strong>：请按你项目实际替换</span></div>
+      <div class="decision"><span class="decision-num">03</span><span class="decision-text"><strong>项目决策点 3</strong>：请按你项目实际替换</span></div>
+      <div class="decision"><span class="decision-num">04</span><span class="decision-text"><strong>项目决策点 4</strong>：请按你项目实际替换</span></div>
+      <div class="decision"><span class="decision-num">05</span><span class="decision-text"><strong>项目决策点 5</strong>：请按你项目实际替换</span></div>
+      <div class="decision"><span class="decision-num">06</span><span class="decision-text"><strong>项目决策点 6</strong>：请按你项目实际替换</span></div>
+      <div class="decision"><span class="decision-num">07</span><span class="decision-text"><strong>项目决策点 7</strong>：请按你项目实际替换</span></div>
+      <div class="decision"><span class="decision-num">08</span><span class="decision-text"><strong>项目决策点 8</strong>：请按你项目实际替换</span></div>
+      <div class="decision"><span class="decision-num">09</span><span class="decision-text"><strong>项目决策点 9</strong>：请按你项目实际替换</span></div>
+    </div>
+  </section>
+
+  <!-- Legend -->
+  <div class="legend">
+    <span><b>优先级</b>：P0 立即做 · P1 本周内 · P2 排期 · P3 远期</span>
+    <span><b>Owner</b>：开发喵 · 测试喵 · 产品喵 · 运维喵 · 运营喵 · team-lead</span>
+    <span><b>路径</b>：当前项目目录下的 需求池.html（用 file:// 在浏览器打开）</span>
+    <span><b>验收</b>：已完成卡上的「🔍 验收」按钮仅项目所有者操作</span>
+  </div>
+
+</div>
+
+<!-- ─────── 验收 Modal（仅 leisure cat 操作） ─────── -->
+<div class="verify-modal" id="verifyModal">
+  <div class="verify-modal-box">
+    <h3>需求验收</h3>
+    <div class="verify-modal-sub">⚠ 仅 leisure cat 操作 · 喵 团队请勿点击</div>
+    <div class="verify-target-title" id="verifyTargetTitle">—</div>
+    <div class="verify-radio-group">
+      <label>
+        <input type="radio" name="verifyResult" value="passed" checked>
+        <span>✓ 通过验收，需求完成</span>
+      </label>
+      <label>
+        <input type="radio" name="verifyResult" value="rejected">
+        <span>✗ 不通过，需求要改进</span>
+      </label>
+    </div>
+    <div class="verify-reject-fields" id="verifyRejectFields">
+      <div class="verify-form-row">
+        <label>改进原因</label>
+        <textarea id="verifyReason" placeholder="说清楚哪里不对、怎么改"></textarea>
+      </div>
+      <div class="verify-form-row">
+        <label>新优先级</label>
+        <select id="verifyPriority">
+          <option value="p0">P0 · 立即做</option>
+          <option value="p1" selected>P1 · 本周内</option>
+          <option value="p2">P2 · 排期</option>
+          <option value="p3">P3 · 远期</option>
+        </select>
+      </div>
+    </div>
+    <div class="verify-actions">
+      <button id="verifyCancel">取消</button>
+      <button id="verifyConfirm" class="primary">确认</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─────── 返工 Modal ─────── -->
+<div class="verify-modal" id="reworkModal">
+  <div class="verify-modal-box">
+    <h3>需求返工</h3>
+    <div class="verify-modal-sub">⚠ 仅 leisure cat 操作 · 将归档需求重新放回待开发</div>
+    <div class="verify-target-title" id="reworkTargetTitle">—</div>
+    <div class="verify-reject-fields active">
+      <div class="verify-form-row">
+        <label>返工原因</label>
+        <textarea id="reworkReason" placeholder="说清楚为什么要返工"></textarea>
+      </div>
+      <div class="verify-form-row">
+        <label>新优先级</label>
+        <select id="reworkPriority">
+          <option value="p0">P0 · 立即做</option>
+          <option value="p1" selected>P1 · 本周内</option>
+          <option value="p2">P2 · 排期</option>
+          <option value="p3">P3 · 远期</option>
+        </select>
+      </div>
+    </div>
+    <div class="verify-actions">
+      <button id="reworkCancel">取消</button>
+      <button id="reworkConfirm" class="primary">确认返工</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─────── 卡片详情 Modal ─────── -->
+<div class="verify-modal" id="detailModal">
+  <div class="verify-modal-box" style="width: min(680px, 92vw);">
+    <div class="detail-head">
+      <span class="priority p3" id="detailPriority">—</span>
+      <span class="detail-status-badge" id="detailStatus">—</span>
+      <button class="detail-close" id="detailClose" aria-label="关闭">✕</button>
+    </div>
+    <div class="detail-modal-title" id="detailTitle">—</div>
+    <div class="detail-tags" id="detailTags"></div>
+    <div class="detail-section">
+      <div class="detail-label">需求描述</div>
+      <div class="detail-desc" id="detailDesc">—</div>
+    </div>
+    <div class="detail-footer">
+      <div><span class="detail-label-inline">Owner</span><span id="detailOwner">—</span></div>
+      <div class="detail-meta" id="detailMeta"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Priority filter — 只作用于待开发 + 进行中（前两列）
+  const filterBtns = document.querySelectorAll('#priorityFilter .filter-btn');
+  const filterableCards = document.querySelectorAll('.column:not(:last-child) .req-card');
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const want = btn.dataset.priority;
+      filterableCards.forEach(card => {
+        if (want === 'all' || card.dataset.priority === want) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    });
+  });
+
+  // ─────── 验收系统（仅 leisure cat 操作 · localStorage 持久化） ───────
+  const STORAGE_KEY = 'reqpool-verifications';
+
+  function loadVerifications() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+    catch { return []; }
+  }
+  function saveVerifications(arr) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+  }
+  function fingerprint(card) {
+    const t = card.querySelector('.req-title');
+    return t ? t.textContent.trim() : '';
+  }
+
+  function applyVerifications() {
+    const records = loadVerifications();
+    const pendingBody = document.querySelector('.kanban .column:nth-child(1) .column-body');
+    if (!pendingBody) return;
+
+    records.forEach(rec => {
+      const allDone = document.querySelectorAll('.req-card.done');
+      const target = Array.from(allDone).find(c => fingerprint(c) === rec.id);
+      if (!target) return;
+
+      if (rec.action === 'passed') {
+        // 真归档（_writtenToFile=true）→ CSS .archived 已经处理隐藏，不需 DOM 操作
+        // 遗留（_writtenToFile=false 或 undefined）→ 用 display:none 兜底
+        if (!rec._writtenToFile) target.style.display = 'none';
+      } else if (rec._writtenToFile) {
+        // 已写回 HTML 文件 — 原 done 卡仅隐藏，不重复 DOM 注入
+        target.style.display = 'none';
+      } else if (rec.action === 'rejected' || rec.action === 'reworked') {
+        const isRework = rec.action === 'reworked';
+        const prefix = isRework ? '[返工]' : '[改进]';
+        const reasonLabel = isRework ? '返工原因' : '改进原因';
+        const tagLabel = isRework ? '🔄 返工' : '🔄 改进';
+        const timeNote = isRework ? '验收归档后返工' : '验收驳回';
+        const ts = isRework ? rec.reworkTimestamp : rec.timestamp;
+        const tagsHtml = Array.from(target.querySelectorAll('.module-tag')).map(t => t.outerHTML).join('\n            ');
+        const newCard = document.createElement('div');
+        newCard.className = 'req-card';
+        newCard.dataset.priority = rec.priority;
+        newCard.innerHTML = `
+          <div class="req-top">
+            <span class="priority ${rec.priority}">${rec.priority.toUpperCase()}</span>
+            ${tagsHtml}
+            <span class="blocked-tag">${tagLabel}</span>
+          </div>
+          <div class="req-title">${prefix} ${rec.id}</div>
+          <div class="req-desc"><b>${reasonLabel}：</b>${rec.reason}</div>
+          <div class="req-bottom">
+            <span class="owner"><span class="owner-dot dev"></span>开发喵</span>
+            <span style="font-size:0.68rem;color:var(--muted);font-family:var(--font-mono)">${timeNote} · ${ts}</span>
+          </div>
+        `;
+        pendingBody.insertBefore(newCard, pendingBody.firstChild);
+        target.style.display = 'none';
+      }
+    });
+  }
+
+  function injectVerifyButtons() {
+    document.querySelectorAll('.req-card.done').forEach(card => {
+      if (card.querySelector('.verify-btn') || card.querySelector('.verified-tag')) return;
+      const btn = document.createElement('button');
+      btn.className = 'verify-btn';
+      btn.textContent = '🔍 验收';
+      btn.addEventListener('click', () => openVerifyModal(card));
+      card.querySelector('.req-top').appendChild(btn);
+    });
+  }
+
+  let currentVerifyCard = null;
+  const modal = document.getElementById('verifyModal');
+  const rejectFields = document.getElementById('verifyRejectFields');
+  const targetTitleEl = document.getElementById('verifyTargetTitle');
+  const reasonEl = document.getElementById('verifyReason');
+  const priorityEl = document.getElementById('verifyPriority');
+
+  function openVerifyModal(card) {
+    currentVerifyCard = card;
+    targetTitleEl.textContent = fingerprint(card);
+    document.querySelector('input[name="verifyResult"][value="passed"]').checked = true;
+    rejectFields.classList.remove('active');
+    reasonEl.value = '';
+    priorityEl.value = 'p1';
+    modal.classList.add('active');
+  }
+  function closeVerifyModal() {
+    modal.classList.remove('active');
+    currentVerifyCard = null;
+  }
+
+  document.querySelectorAll('input[name="verifyResult"]').forEach(r => {
+    r.addEventListener('change', e => {
+      if (e.target.value === 'rejected') rejectFields.classList.add('active');
+      else rejectFields.classList.remove('active');
+    });
+  });
+
+  // ─────── 文件写回（FSA + IndexedDB 持久化 + clipboard fallback） ───────
+  let _fileHandle = null;
+  const IDB_NAME = 'reqpool-fsa';
+  const IDB_STORE = 'handles';
+  const IDB_KEY = 'fileHandle';
+
+  function openIDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(IDB_NAME, 1);
+      req.onupgradeneeded = () => req.result.createObjectStore(IDB_STORE);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+  async function loadStoredHandle() {
+    try {
+      const db = await openIDB();
+      return await new Promise((resolve) => {
+        const tx = db.transaction(IDB_STORE, 'readonly');
+        const r = tx.objectStore(IDB_STORE).get(IDB_KEY);
+        r.onsuccess = () => resolve(r.result || null);
+        r.onerror = () => resolve(null);
+      });
+    } catch { return null; }
+  }
+  async function saveHandle(handle) {
+    try {
+      const db = await openIDB();
+      await new Promise((resolve) => {
+        const tx = db.transaction(IDB_STORE, 'readwrite');
+        tx.objectStore(IDB_STORE).put(handle, IDB_KEY);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => resolve();
+      });
+    } catch {}
+  }
+  async function clearStoredHandle() {
+    try {
+      const db = await openIDB();
+      await new Promise((resolve) => {
+        const tx = db.transaction(IDB_STORE, 'readwrite');
+        tx.objectStore(IDB_STORE).delete(IDB_KEY);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => resolve();
+      });
+    } catch {}
+  }
+
+  async function ensureFileHandle() {
+    if (_fileHandle) return _fileHandle;
+    if (!('showOpenFilePicker' in window)) return null;
+
+    // 先尝试从 IndexedDB 读取已保存的 handle
+    const stored = await loadStoredHandle();
+    if (stored) {
+      try {
+        let perm = await stored.queryPermission({ mode: 'readwrite' });
+        if (perm !== 'granted') {
+          perm = await stored.requestPermission({ mode: 'readwrite' });
+        }
+        if (perm === 'granted') {
+          _fileHandle = stored;
+          return _fileHandle;
+        }
+      } catch (e) {
+        // handle 失效（文件被删/移动），清掉重新选
+        await clearStoredHandle();
+      }
+    }
+
+    // 第一次或 handle 失效 → 弹文件选择器
+    try {
+      const [h] = await window.showOpenFilePicker({
+        types: [{ description: 'HTML', accept: { 'text/html': ['.html'] } }],
+        multiple: false,
+      });
+      let perm = await h.queryPermission({ mode: 'readwrite' });
+      if (perm !== 'granted') {
+        perm = await h.requestPermission({ mode: 'readwrite' });
+        if (perm !== 'granted') return null;
+      }
+      _fileHandle = h;
+      await saveHandle(h);  // 持久化，下次刷新不再问
+      return _fileHandle;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function buildImproveCardHtml(rec, originalCard, prefix, tagLabel, reasonLabel, timeNote, ts) {
+    const tags = Array.from(originalCard.querySelectorAll('.module-tag, .blocked-tag'))
+      .map(t => t.outerHTML.replace(/\n\s+/g, ' ')).join(' ');
+    const originalDesc = originalCard.querySelector('.req-desc')?.innerHTML?.trim() || '（原 desc 未保留）';
+    return `<div class="req-card" data-priority="${rec.priority}">
+          <div class="req-top">
+            <span class="priority ${rec.priority}">${rec.priority.toUpperCase()}</span>
+            ${tags}
+            <span class="blocked-tag">${tagLabel}</span>
+          </div>
+          <div class="req-title">${prefix} ${rec.id}</div>
+          <div class="req-desc"><b>${reasonLabel}：</b>${rec.reason}<br><b>原始描述：</b>${originalDesc}</div>
+          <div class="req-bottom">
+            <span class="owner"><span class="owner-dot dev"></span>开发喵</span>
+            <span style="font-size:0.68rem;color:var(--muted);font-family:var(--font-mono)">${timeNote} · ${ts}</span>
+          </div>
+        </div>`;
+  }
+
+  // 写回：给 done 卡加 archived class（实现真归档，HTML 层面持久）
+  async function archiveCardInFile(title, timestamp) {
+    const handle = await ensureFileHandle();
+    if (!handle) return false;
+    try {
+      const file = await handle.getFile();
+      const text = await file.text();
+      const titleEsc = title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/&amp;/g, '(?:&amp;|&)');
+      // 用 lookahead 锁定包含此 title 的 done 卡，仅替换其开头 div
+      const re = new RegExp(`<div class="req-card done"(?=(?:[^<]|<(?!div class="req-card))*?<div class="req-title">[^<]*?${titleEsc}[^<]*?</div>)`, '');
+      const newText = text.replace(re, `<div class="req-card done archived" data-archived-at="${timestamp}"`);
+      if (newText === text) throw new Error('找不到匹配的 done 卡：' + title);
+      const writable = await handle.createWritable();
+      await writable.write(newText);
+      await writable.close();
+      return true;
+    } catch (e) {
+      console.error('archiveCardInFile error:', e);
+      alert('归档写回文件失败：' + e.message + '（已 fallback 到 localStorage 隐藏）');
+      return false;
+    }
+  }
+
+  // 写回：从 done 卡移除 archived class（返工时反向）
+  async function unarchiveCardInFile(title) {
+    const handle = await ensureFileHandle();
+    if (!handle) return false;
+    try {
+      const file = await handle.getFile();
+      const text = await file.text();
+      const titleEsc = title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/&amp;/g, '(?:&amp;|&)');
+      const re = new RegExp(`<div class="req-card done archived"(?: data-archived-at="[^"]*")?(?=(?:[^<]|<(?!div class="req-card))*?<div class="req-title">[^<]*?${titleEsc}[^<]*?</div>)`, '');
+      const newText = text.replace(re, `<div class="req-card done"`);
+      if (newText === text) return false;
+      const writable = await handle.createWritable();
+      await writable.write(newText);
+      await writable.close();
+      return true;
+    } catch (e) {
+      console.error('unarchiveCardInFile error:', e);
+      return false;
+    }
+  }
+
+  async function writeBackImproveCard(cardHtml) {
+    const handle = await ensureFileHandle();
+    if (!handle) {
+      try {
+        await navigator.clipboard.writeText(cardHtml);
+        alert('改进卡 HTML 已复制到剪贴板（FSA 不可用 / 未授权）。\n请贴到 需求池.html 的「待开发」<div class="column-body"> 内部最上方后保存。');
+      } catch {
+        alert('改进卡 HTML 生成失败，请检查 console。\n\n' + cardHtml);
+      }
+      return false;
+    }
+    try {
+      const file = await handle.getFile();
+      const text = await file.text();
+      // 找到 "待开发" column-body 开始位置（注释 + body 标记）
+      const marker = /(<!-- 待开发 -->[\s\S]*?<div class="column-body">)/;
+      const match = text.match(marker);
+      if (!match) throw new Error('找不到 "待开发" column-body 标记');
+      const insertIdx = match.index + match[0].length;
+      const newText = text.slice(0, insertIdx) + '\n\n        ' + cardHtml + text.slice(insertIdx);
+      const writable = await handle.createWritable();
+      await writable.write(newText);
+      await writable.close();
+      return true;
+    } catch (e) {
+      console.error('FSA 写回失败', e);
+      try { await navigator.clipboard.writeText(cardHtml); } catch {}
+      alert('FSA 写回失败：' + e.message + '\n改进卡 HTML 已复制到剪贴板，请手动 paste。');
+      return false;
+    }
+  }
+
+  document.getElementById('verifyCancel').addEventListener('click', closeVerifyModal);
+  document.getElementById('verifyConfirm').addEventListener('click', async () => {
+    if (!currentVerifyCard) return;
+    const action = document.querySelector('input[name="verifyResult"]:checked').value;
+    const id = fingerprint(currentVerifyCard);
+    const records = loadVerifications();
+
+    if (action === 'passed') {
+      const ts = new Date().toISOString().slice(0, 16).replace('T', ' ');
+      const archivedOk = await archiveCardInFile(id, ts);
+      records.push({ id, action: 'passed', timestamp: ts, _writtenToFile: archivedOk });
+      saveVerifications(records);
+      closeVerifyModal();
+      location.reload();
+    } else {
+      const reason = reasonEl.value.trim();
+      if (!reason) { alert('请填写改进原因'); return; }
+      const ts = new Date().toISOString().slice(0, 16).replace('T', ' ');
+      const rec = { id, action: 'rejected', reason, priority: priorityEl.value, timestamp: ts };
+      const cardHtml = buildImproveCardHtml(rec, currentVerifyCard, '[改进]', '🔄 改进', '改进原因', '验收驳回', ts);
+      const writeOk = await writeBackImproveCard(cardHtml);
+      if (writeOk) {
+        // 已写回文件，不需要 localStorage 同步注入 — 但仍标记 passed 状态隐藏原 done 卡
+        records.push({ id, action: 'rejected', reason, priority: priorityEl.value, timestamp: ts, _writtenToFile: true });
+      } else {
+        records.push(rec);
+      }
+      saveVerifications(records);
+      closeVerifyModal();
+      location.reload();
+    }
+  });
+
+  modal.addEventListener('click', e => {
+    if (e.target === modal) closeVerifyModal();
+  });
+
+  // ─────── 归档 + 返工 系统 ───────
+  function buildArchiveView() {
+    const archiveList = document.getElementById('archiveList');
+    const countEl = document.getElementById('archiveCount');
+
+    // 真归档源（首选）：HTML 中带 .archived class 的 done 卡
+    const archivedFromHtml = Array.from(document.querySelectorAll('.req-card.done.archived'));
+    // 遗留源（兜底）：localStorage 中 action=passed 但 HTML 还没有 archived class 的（FSA 失败 / 跨浏览器）
+    const records = loadVerifications();
+    const legacyArchived = records.filter(r => r.action === 'passed' && !archivedFromHtml.some(c => fingerprint(c) === r.id));
+
+    const total = archivedFromHtml.length + legacyArchived.length;
+    countEl.textContent = String(total);
+
+    if (total === 0) {
+      archiveList.innerHTML = '<div class="archive-empty">暂无归档需求</div>';
+      return;
+    }
+    archiveList.innerHTML = '';
+
+    // 渲染 HTML-archived 卡
+    archivedFromHtml.forEach(doneCard => {
+      const title = fingerprint(doneCard);
+      const tagsHtml = Array.from(doneCard.querySelectorAll('.module-tag')).map(t => t.outerHTML).join(' ');
+      const archivedAt = doneCard.dataset.archivedAt || '未知';
+      const item = document.createElement('div');
+      item.className = 'archive-item';
+      item.innerHTML = `
+        <div class="archive-item-head">
+          <span class="check-icon" style="color:var(--accent2);">✓✓</span>
+          ${tagsHtml}
+          <span class="archive-time">归档于 ${archivedAt}</span>
+        </div>
+        <div class="archive-item-title">${title}</div>
+        <button class="archive-rework-btn" data-id="${title}">🔄 返工</button>
+      `;
+      item.querySelector('.archive-rework-btn').addEventListener('click', () => openReworkModal(title));
+      archiveList.appendChild(item);
+    });
+
+    // 渲染遗留 localStorage-only 归档（带迁移提示）
+    legacyArchived.forEach(rec => {
+      const allDone = document.querySelectorAll('.req-card.done');
+      const orig = Array.from(allDone).find(c => fingerprint(c) === rec.id);
+      const tagsHtml = orig ? Array.from(orig.querySelectorAll('.module-tag')).map(t => t.outerHTML).join(' ') : '';
+      const item = document.createElement('div');
+      item.className = 'archive-item';
+      item.innerHTML = `
+        <div class="archive-item-head">
+          <span class="check-icon" style="color:var(--accent2);">✓✓</span>
+          ${tagsHtml}
+          <span class="archive-time" style="color:var(--warn);">⚠️ 仅 localStorage 归档</span>
+        </div>
+        <div class="archive-item-title">${rec.id}</div>
+        <button class="archive-rework-btn" data-id="${rec.id}">🔄 返工</button>
+      `;
+      item.querySelector('.archive-rework-btn').addEventListener('click', () => openReworkModal(rec.id));
+      archiveList.appendChild(item);
+    });
+  }
+
+  const archiveToggleBtn = document.getElementById('archiveToggle');
+  const archiveToggleLabel = archiveToggleBtn.querySelector('.archive-toggle-label');
+  const archiveBadge = document.getElementById('archiveCount');
+  archiveToggleBtn.addEventListener('click', () => {
+    document.body.classList.toggle('view-archive');
+    const isArchive = document.body.classList.contains('view-archive');
+    archiveToggleLabel.textContent = isArchive ? '← 返回需求池' : '📦 归档';
+    archiveBadge.style.display = isArchive ? 'none' : '';
+  });
+
+  // 返工 modal
+  let currentReworkId = null;
+  const reworkModal = document.getElementById('reworkModal');
+  const reworkReasonEl = document.getElementById('reworkReason');
+  const reworkPriorityEl = document.getElementById('reworkPriority');
+  const reworkTargetTitleEl = document.getElementById('reworkTargetTitle');
+
+  function openReworkModal(id) {
+    currentReworkId = id;
+    reworkTargetTitleEl.textContent = id;
+    reworkReasonEl.value = '';
+    reworkPriorityEl.value = 'p1';
+    reworkModal.classList.add('active');
+  }
+  function closeReworkModal() {
+    reworkModal.classList.remove('active');
+    currentReworkId = null;
+  }
+  document.getElementById('reworkCancel').addEventListener('click', closeReworkModal);
+  document.getElementById('reworkConfirm').addEventListener('click', async () => {
+    if (!currentReworkId) return;
+    const reason = reworkReasonEl.value.trim();
+    if (!reason) { alert('请填写返工原因'); return; }
+    const priority = reworkPriorityEl.value;
+    const records = loadVerifications();
+    const idx = records.findIndex(r => r.id === currentReworkId && r.action === 'passed');
+    if (idx < 0) { closeReworkModal(); return; }
+
+    // 找原 done 卡，构建 [返工] 卡 HTML，写回文件
+    const allDone = document.querySelectorAll('.req-card.done');
+    const originalCard = Array.from(allDone).find(c => fingerprint(c) === currentReworkId);
+    const ts = new Date().toISOString().slice(0, 16).replace('T', ' ');
+    let writeOk = false;
+    if (originalCard) {
+      const rec = { id: currentReworkId, reason, priority, reworkTimestamp: ts };
+      const cardHtml = buildImproveCardHtml(rec, originalCard, '[返工]', '🔄 返工', '返工原因', '验收归档后返工', ts);
+      writeOk = await writeBackImproveCard(cardHtml);
+    }
+
+    // 同时把原 done 卡从 archived 状态恢复（移除 archived class），让它仍在「已完成」可见
+    await unarchiveCardInFile(currentReworkId);
+
+    records[idx] = {
+      ...records[idx],
+      action: 'reworked',
+      reason,
+      priority,
+      reworkTimestamp: ts,
+      _writtenToFile: writeOk,
+    };
+    saveVerifications(records);
+    closeReworkModal();
+    location.reload();
+  });
+  reworkModal.addEventListener('click', e => {
+    if (e.target === reworkModal) closeReworkModal();
+  });
+
+  applyVerifications();
+  injectVerifyButtons();
+  buildArchiveView();
+
+  // ─────── 自动刷新（不用手动 F5） ───────
+  const AUTOREFRESH_KEY = 'reqpool-autorefresh';
+  const REFRESH_INTERVAL_MS = 15000;
+  let autoRefreshTimer = null;
+  const autoRefreshBtn = document.getElementById('autoRefreshToggle');
+  const autoRefreshLabel = autoRefreshBtn.querySelector('.auto-refresh-label');
+
+  function isAutoRefreshOn() {
+    const v = localStorage.getItem(AUTOREFRESH_KEY);
+    return v === null ? true : v === 'true';
+  }
+  function setAutoRefreshOn(on) {
+    localStorage.setItem(AUTOREFRESH_KEY, String(on));
+    if (on) {
+      autoRefreshBtn.classList.add('on');
+      autoRefreshLabel.textContent = '自动刷新 15s';
+      startAutoRefresh();
+    } else {
+      autoRefreshBtn.classList.remove('on');
+      autoRefreshLabel.textContent = '自动刷新 关';
+      stopAutoRefresh();
+    }
+  }
+  function startAutoRefresh() {
+    if (autoRefreshTimer) return;
+    autoRefreshTimer = setInterval(() => {
+      if (document.querySelector('.verify-modal.active')) return;
+      if (document.body.classList.contains('view-archive')) return;
+      sessionStorage.setItem('reqpool-scrollY', String(window.scrollY));
+      location.reload();
+    }, REFRESH_INTERVAL_MS);
+  }
+  function stopAutoRefresh() {
+    if (autoRefreshTimer) { clearInterval(autoRefreshTimer); autoRefreshTimer = null; }
+  }
+  autoRefreshBtn.addEventListener('click', () => {
+    setAutoRefreshOn(!isAutoRefreshOn());
+  });
+  const savedScrollY = sessionStorage.getItem('reqpool-scrollY');
+  if (savedScrollY) {
+    window.scrollTo(0, parseInt(savedScrollY, 10));
+    sessionStorage.removeItem('reqpool-scrollY');
+  }
+  setAutoRefreshOn(isAutoRefreshOn());
+
+  // ─────── 卡片详情 modal ───────
+  const detailModal = document.getElementById('detailModal');
+  const detailPriorityEl = document.getElementById('detailPriority');
+  const detailStatusEl = document.getElementById('detailStatus');
+  const detailTitleEl = document.getElementById('detailTitle');
+  const detailTagsEl = document.getElementById('detailTags');
+  const detailDescEl = document.getElementById('detailDesc');
+  const detailDescSection = detailDescEl.parentElement;
+  const detailOwnerEl = document.getElementById('detailOwner');
+  const detailMetaEl = document.getElementById('detailMeta');
+
+  function openDetailModal(card) {
+    const title = card.querySelector('.req-title')?.textContent.trim() || '—';
+    const descEl = card.querySelector('.req-desc');
+    const desc = descEl?.innerHTML?.trim() || '';
+    const priorityEl = card.querySelector('.priority');
+    const priorityText = priorityEl?.textContent.trim() || (card.classList.contains('done') ? '✓' : '—');
+    const priorityClass = priorityEl?.className.match(/p[0-3]/)?.[0] || 'p3';
+    const columnTitle = card.closest('.column')?.querySelector('.column-title')?.textContent.trim() || '—';
+    let statusClass = 'pending';
+    if (columnTitle.includes('已完成') || card.classList.contains('done')) statusClass = 'done';
+    else if (columnTitle.includes('进行中')) statusClass = 'progress';
+
+    const tagsHtml = Array.from(card.querySelectorAll('.module-tag, .blocked-tag, .verified-tag'))
+      .map(t => t.outerHTML).join(' ');
+    const ownerHtml = card.querySelector('.owner')?.innerHTML || '—';
+    const reqBottomSpans = card.querySelectorAll('.req-bottom > span');
+    const meta = reqBottomSpans.length > 1 ? reqBottomSpans[reqBottomSpans.length - 1].textContent.trim() : '';
+
+    detailPriorityEl.textContent = priorityText;
+    detailPriorityEl.className = 'priority ' + priorityClass;
+    detailStatusEl.textContent = columnTitle.replace(/\s+\d+$/, '');
+    detailStatusEl.className = 'detail-status-badge ' + statusClass;
+    detailTitleEl.textContent = title;
+    detailTagsEl.innerHTML = tagsHtml;
+    if (desc) {
+      detailDescEl.innerHTML = desc;
+      detailDescSection.style.display = '';
+    } else {
+      detailDescSection.style.display = 'none';
+    }
+    detailOwnerEl.innerHTML = ownerHtml;
+    detailMetaEl.textContent = meta;
+
+    // 顺便把卡上的 verify-link 也镜像到 modal 底部（方便点击）
+    const existingDetailLink = document.getElementById('detailVerifyLink');
+    if (existingDetailLink) existingDetailLink.remove();
+    const verifyLink = card.querySelector('.verify-link');
+    if (verifyLink) {
+      const clone = verifyLink.cloneNode(true);
+      clone.id = 'detailVerifyLink';
+      const section = document.createElement('div');
+      section.className = 'detail-section';
+      const label = document.createElement('div');
+      label.className = 'detail-label';
+      label.textContent = '验收链接';
+      section.appendChild(label);
+      section.appendChild(clone);
+      detailDescSection.parentNode.insertBefore(section, detailDescSection.nextSibling);
+    }
+
+    detailModal.classList.add('active');
+  }
+
+  function closeDetailModal() { detailModal.classList.remove('active'); }
+
+  document.getElementById('detailClose').addEventListener('click', closeDetailModal);
+  detailModal.addEventListener('click', e => {
+    if (e.target === detailModal) closeDetailModal();
+  });
+
+  // 给所有卡片绑定点击 — 排除内部按钮
+  document.querySelectorAll('.req-card').forEach(card => {
+    card.addEventListener('click', e => {
+      if (e.target.closest('button, a')) return;
+      openDetailModal(card);
+    });
+  });
+
+  // Esc 关闭所有 modal
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      closeDetailModal();
+      if (typeof closeVerifyModal === 'function') closeVerifyModal();
+      if (typeof closeReworkModal === 'function') closeReworkModal();
+    }
+  });
+</script>
+
+<!-- #193 git archive modal -->
+<dialog id="archiveModal" class="archive-modal">
+  <div class="modal-header">
+    <h2>📦 git 存档记录</h2>
+    <button class="close-btn" onclick="document.getElementById('archiveModal').close()">×</button>
+  </div>
+  <div class="modal-body" id="archiveList">
+    <!-- 1h git cron 在此 append archive-row, 每行格式见 SKILL.md cron 章节 -->
+  </div>
+</dialog>
+</body>
+</html>
