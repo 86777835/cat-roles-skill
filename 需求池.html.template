@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>全能团队 · 需求池</title>
+<title>{{PROJECT_NAME}} · 需求池</title>
 <style>
   :root {
     --bg:        oklch(13% 0.01 260);

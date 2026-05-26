@@ -425,7 +425,7 @@ tmux send-keys -t %<pane_id> Enter                 # 提交消息
 
    **c) 清空 stats**：顶部 stats 区域的总数、各列计数、各优先级计数全部归零。
 
-   **d) 替换占位符**：用 sed / Edit 把 `{{PROJECT_NAME}}` / `{{PROJECT_TAGLINE}}` / `{{LAST_UPDATED}}` 替换为实际值。
+   **d) 替换占位符**：用 sed / Edit 把 `{{PROJECT_NAME}}` / `{{PROJECT_TAGLINE}}` / `{{LAST_UPDATED}}` 替换为实际值。**注意 `{{PROJECT_NAME}}` 在两处出现**：① body 内的 `<h1>` 标题；② head 的 `<title>` 标签（浏览器 tab 名）。`replace_all=true` 一次性全替换；或者用 sed `s/{{PROJECT_NAME}}/...../g`。
 
    **为什么不能省略**：模板文件（`需求池.html.template`）是所有项目共用的全局资源。当你在项目 A 使用时，模板里可能残留项目 B 的卡片、决策记录和 stats。如果不清理，项目 A 的看板会显示项目 B 的数据，导致需求混乱。每个项目的看板必须是独立的、从零开始的状态。
 
