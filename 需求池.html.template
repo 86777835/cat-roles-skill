@@ -999,6 +999,16 @@
   // ─────── 验收系统（仅 leisure cat 操作 · localStorage 持久化） ───────
   const STORAGE_KEY = 'reqpool-verifications';
 
+  // ── HTML escape (防止用户输入 raw HTML 破坏看板布局) ─────────────────────────
+  // 2026-05-26 fix: CEO 提交含 <div class="flex..."> 的改进原因，浏览器解析为真 DOM 导致 3 列变 1 列
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
   function loadVerifications() {
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
     catch { return []; }
@@ -1046,7 +1056,7 @@
             <span class="blocked-tag">${tagLabel}</span>
           </div>
           <div class="req-title">${prefix} ${rec.id}</div>
-          <div class="req-desc"><b>${reasonLabel}：</b>${rec.reason}</div>
+          <div class="req-desc"><b>${reasonLabel}：</b>${escapeHtml(rec.reason)}</div>
           <div class="req-bottom">
             <span class="owner"><span class="owner-dot dev"></span>开发喵</span>
             <span style="font-size:0.68rem;color:var(--muted);font-family:var(--font-mono)">${timeNote} · ${ts}</span>
@@ -1098,8 +1108,14 @@
   });
 
   // ─────── 文件写回（FSA + IndexedDB 持久化 + clipboard fallback） ───────
+  // IDB name 用当前 page URL hash，避免多项目共用一个 handle 导致写到错的文件
   let _fileHandle = null;
-  const IDB_NAME = 'reqpool-fsa';
+  const _pathHash = (() => {
+    let h = 0; const s = location.pathname || '/';
+    for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+    return ('00000000' + (h >>> 0).toString(16)).slice(-8);
+  })();
+  const IDB_NAME = 'reqpool-fsa-' + _pathHash;
   const IDB_STORE = 'handles';
   const IDB_KEY = 'fileHandle';
 
@@ -1197,7 +1213,7 @@
             <span class="blocked-tag">${tagLabel}</span>
           </div>
           <div class="req-title">${prefix} ${rec.id}</div>
-          <div class="req-desc"><b>${reasonLabel}：</b>${rec.reason}<br><b>原始描述：</b>${originalDesc}</div>
+          <div class="req-desc"><b>${reasonLabel}：</b>${escapeHtml(rec.reason)}<br><b>原始描述：</b>${originalDesc}</div>
           <div class="req-bottom">
             <span class="owner"><span class="owner-dot dev"></span>开发喵</span>
             <span style="font-size:0.68rem;color:var(--muted);font-family:var(--font-mono)">${timeNote} · ${ts}</span>
@@ -1249,6 +1265,43 @@
     }
   }
 
+  // ─────── recountStats: 写回新卡时同步修正 stats / column-count / toolbar ───
+  // 防止 FSA 插卡后 stats drift（cron 规则 D/E/F/G 检测）
+  function patchStatsForNewPendingCard(text, priority) {
+    // 总 +1
+    text = text.replace(
+      /(<div class="stat-value">)(\d+)(<\/div>)/,
+      (_, a, n, b) => `${a}${parseInt(n)+1}${b}`
+    );
+    // 待 +1
+    text = text.replace(
+      /(<div class="stat-value accent">)(\d+)(<\/div>)/,
+      (_, a, n, b) => `${a}${parseInt(n)+1}${b}`
+    );
+    // column-count (pending 列头徽章) +1（仅在 column-dot pending 后 400 字符内）
+    const dotIdx = text.indexOf('<span class="column-dot pending">');
+    if (dotIdx !== -1) {
+      const snippet = text.slice(dotIdx, dotIdx + 400);
+      const patched = snippet.replace(
+        /(<div class="column-count">)(\d+)(<\/div>)/,
+        (_, a, n, b) => `${a}${parseInt(n)+1}${b}`
+      );
+      text = text.slice(0, dotIdx) + patched + text.slice(dotIdx + 400);
+    }
+    // toolbar 全部 +1
+    text = text.replace(
+      /(>全部<span class="filter-count">)(\d+)(<\/span>)/,
+      (_, a, n, b) => `${a}${parseInt(n)+1}${b}`
+    );
+    // toolbar P{priority} +1（仅当 priority 已知）
+    if (priority) {
+      const pLabel = priority.toUpperCase();
+      const re = new RegExp(`(>${pLabel}<span class="filter-count">)(\\d+)(<\\/span>)`);
+      text = text.replace(re, (_, a, n, b) => `${a}${parseInt(n)+1}${b}`);
+    }
+    return text;
+  }
+
   async function writeBackImproveCard(cardHtml) {
     const handle = await ensureFileHandle();
     if (!handle) {
@@ -1268,7 +1321,10 @@
       const match = text.match(marker);
       if (!match) throw new Error('找不到 "待开发" column-body 标记');
       const insertIdx = match.index + match[0].length;
-      const newText = text.slice(0, insertIdx) + '\n\n        ' + cardHtml + text.slice(insertIdx);
+      let newText = text.slice(0, insertIdx) + '\n\n        ' + cardHtml + text.slice(insertIdx);
+      // 同步修正 stats / column-count / toolbar，防 cron D/E/F/G 规则告警
+      const prioMatch = cardHtml.match(/data-priority="(p\d)"/);
+      newText = patchStatsForNewPendingCard(newText, prioMatch ? prioMatch[1] : null);
       const writable = await handle.createWritable();
       await writable.write(newText);
       await writable.close();
